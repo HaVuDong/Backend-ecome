@@ -1,7 +1,42 @@
-# Render.com ignore
+# ====================================
+# DOCKER IGNORE - ECOME BACKEND
+# ====================================
+
+# Build output
 target/
+
+# IDE
 .idea/
 *.iml
-.mvn/wrapper/maven-wrapper.jar
+.vscode/
+
+# Maven wrapper (sẽ dùng trong Docker)
+!.mvn/wrapper/maven-wrapper.properties
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs/
+
+# Environment (sensitive)
+.env
+.env.*
+
+# Documentation
+*.md
+docs/
+
+# Test files
+src/test/
+
+# Uploads (local only)
 uploads/images/*
 !uploads/images/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
