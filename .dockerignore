@@ -1,0 +1,7 @@
+# Render.com ignore
+target/
+.idea/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+uploads/images/*
+!uploads/images/.gitkeep
