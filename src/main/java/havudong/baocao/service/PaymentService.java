@@ -54,8 +54,8 @@ public class PaymentService {
     private static final String BANK_ACCOUNT = "037189928";  // Số tài khoản
     private static final String ACCOUNT_NAME = "SHOP ECOMMERCE";  // Tên tài khoản
     
-    // QR hết hạn sau 5 phút
-    private static final int QR_EXPIRY_MINUTES = 5;
+    // QR hết hạn sau 2 phút
+    private static final int QR_EXPIRY_MINUTES = 2;
     
     /**
      * Tạo mã QR thanh toán cho đơn hàng
