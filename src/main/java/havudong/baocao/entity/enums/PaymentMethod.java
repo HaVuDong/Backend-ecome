@@ -13,5 +13,6 @@ package havudong.baocao.entity.enums;
  */
 public enum PaymentMethod {
     COD,            // Thanh toán khi nhận hàng
-    QR_TRANSFER     // Chuyển khoản qua QR
+    QR_TRANSFER,    // Chuyển khoản qua QR
+    VNPAY           // VNPay gateway
 }

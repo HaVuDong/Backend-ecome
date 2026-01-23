@@ -37,6 +37,8 @@ public class SecurityConfig {
                 
                 // Payments: cho phép tất cả để test QR
                 .requestMatchers("/api/payments/**").permitAll()
+                // VNPay endpoints (return/ipn/create) should be public so payment gateway callbacks and client can call them
+                .requestMatchers("/api/payment/**").permitAll()
                 
                 // Products: GET là public
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
