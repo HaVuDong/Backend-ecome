@@ -32,3 +32,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore test sources (do not track unit/integration tests in repo)
+src/test/
