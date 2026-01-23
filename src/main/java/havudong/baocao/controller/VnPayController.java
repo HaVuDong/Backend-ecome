@@ -41,12 +41,12 @@ public class VnPayController {
     }
 
     @GetMapping("/return")
-    public ResponseEntity<String> vnpayReturn(@RequestParam Map<String, String> params) throws Exception {
+    public ResponseEntity<String> vnpayReturn(@RequestParam Map<String, String> params, HttpServletRequest httpRequest) throws Exception {
         try {
             log.info("VNPAY return params: {}", params);
             log.debug("VNPAY return params raw: {}", params);
             // Prefer verifying signature using the raw query string to avoid any decoding/encoding mismatches
-            String rawQuery = ((javax.servlet.http.HttpServletRequest) httpRequest).getQueryString();
+            String rawQuery = httpRequest.getQueryString();
             String received = params.get("vnp_SecureHash");
             String calc = vnPayService.computeSignatureFromRawQuery(rawQuery);
             String txnRef = params.get("vnp_TxnRef");
