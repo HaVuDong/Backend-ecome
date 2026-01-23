@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -99,11 +100,21 @@ public class VnPayController {
         }
     }
 
-    @PostMapping("/ipn")
-    public ResponseEntity<String> ipn(@RequestParam Map<String, String> params) throws Exception {
+    @RequestMapping(value = "/ipn", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<String> ipn(@RequestParam Map<String, String> params, HttpServletRequest httpRequest) throws Exception {
         log.info("VNPAY IPN params: {}", params);
         boolean ok = vnPayService.validateSignature(params);
-        if (!ok) return ResponseEntity.badRequest().body("Invalid signature");
+        if (!ok) {
+            // fallback: try raw-query based verification (handles encoding differences)
+            String raw = httpRequest.getQueryString();
+            String calcRaw = vnPayService.computeSignatureFromRawQuery(raw);
+            log.warn("IPN invalid signature, fallback computedRaw={}", calcRaw);
+            if (!calcRaw.equalsIgnoreCase(params.get("vnp_SecureHash"))) {
+                return ResponseEntity.badRequest().body("Invalid signature");
+            } else {
+                ok = true;
+            }
+        }
         Long orderId = Long.parseLong(params.get("vnp_TxnRef"));
         String responseCode = params.get("vnp_ResponseCode");
         if ("00".equals(responseCode)) {

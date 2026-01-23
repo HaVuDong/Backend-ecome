@@ -83,7 +83,7 @@ public class VnPayService {
     // Compute the signature string for given params (used by validateSignature and for debugging)
     public String computeSignature(Map<String, String> params) throws Exception {
         Map<String, String> copy = params.entrySet().stream()
-                .filter(e -> e.getKey() != null && !"vnp_SecureHash".equals(e.getKey()))
+                .filter(e -> e.getKey() != null && !"vnp_SecureHash".equals(e.getKey()) && !"vnp_SecureHashType".equals(e.getKey()))
                 .filter(e -> e.getValue() != null && !e.getValue().isBlank())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a,b)->a, TreeMap::new));
         String hashData = copy.entrySet().stream()
@@ -97,8 +97,8 @@ public class VnPayService {
         if (rawQuery == null || rawQuery.isBlank()) return hmacSHA512(hashSecret, "");
         Map<String, String> copy = java.util.Arrays.stream(rawQuery.split("&"))
                 .map(s -> s.split("=", 2))
-                .filter(kv -> kv.length == 2 && kv[0] != null && !"vnp_SecureHash".equals(kv[0]) && kv[1] != null && !kv[1].isBlank())
-                .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1], (a,b)->a, TreeMap::new));
+                .filter(kv -> kv.length == 2 && kv[0] != null && !"vnp_SecureHash".equals(kv[0]) && !"vnp_SecureHashType".equals(kv[0]) && kv[1] != null && !kv[1].isBlank())
+                .collect(Collectors.toMap(kv -> kv[0], kv -> java.net.URLDecoder.decode(kv[1], java.nio.charset.StandardCharsets.UTF_8), (a,b)->a, TreeMap::new));
         String hashData = copy.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining("&"));
