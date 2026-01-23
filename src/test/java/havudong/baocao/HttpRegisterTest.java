@@ -3,14 +3,15 @@ package havudong.baocao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class HttpRegisterTest {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @org.springframework.boot.web.server.LocalServerPort
+    private int port;
+
+    private org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @Test
     public void registerEndpoint_returnsErrorBody() {
@@ -18,7 +19,8 @@ public class HttpRegisterTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
-        ResponseEntity<String> res = restTemplate.postForEntity("/api/auth/register", entity, String.class);
+        String base = "http://localhost:" + port;
+        ResponseEntity<String> res = restTemplate.postForEntity(base + "/api/auth/register", entity, String.class);
         System.out.println("status=" + res.getStatusCodeValue() + " body=" + res.getBody());
     }
 }
