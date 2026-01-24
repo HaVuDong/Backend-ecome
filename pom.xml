@@ -53,6 +53,12 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!-- For WebClient (OpenAI requests) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
 		<!-- Flyway for production DB migrations -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>

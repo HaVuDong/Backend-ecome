@@ -98,6 +98,9 @@ Backend cho hệ thống E-commerce Marketplace hỗ trợ 2 app React Native:
 | GET | `/api/reviews/me` | Yes | Reviews của tôi |
 | DELETE | `/api/reviews/{id}` | Yes | Xóa review |
 
+### AI Chat (moved)
+AI features have been moved to a standalone service `Aiboxecome`. To use AI chat, deploy `Aiboxecome` and call its endpoint `/api/ai/chat` on that service (forward your user's `Authorization` header). Legacy in-process AI support is available only if you set `aibox.enabled=true` in configuration.
+
 ### Wishlist
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
