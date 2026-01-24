@@ -33,7 +33,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setPhone(request.getPhone());
+        user.setPhone(havudong.baocao.util.PhoneUtil.toInternational(request.getPhone()));
         user.setRole(request.getRole());
         user.setStatus(UserStatus.ACTIVE);
         user.setAddress(request.getAddress());

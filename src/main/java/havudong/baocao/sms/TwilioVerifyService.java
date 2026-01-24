@@ -86,8 +86,10 @@ public class TwilioVerifyService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.setBasicAuth(accountSid, authToken);
 
+            String to = toE164(phone);
+
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("To", phone);
+            body.add("To", to);
             body.add("Channel", "sms");
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
@@ -112,15 +114,16 @@ public class TwilioVerifyService {
             throw new IllegalStateException("Twilio Verify not configured. Set SMS_TWILIO_ACCOUNT_SID, SMS_TWILIO_AUTH_TOKEN and SMS_TWILIO_VERIFY_SERVICE_SID.");
         }
         try {
-            String url = String.format("https://verify.twilio.com/v2/Services/%s/VerificationChecks", verifyServiceSid);
-            log.info("Calling Twilio Verify check URL: {} for phone {}", url, phone);
+            String url = String.format("https://verify.twilio.com/v2/Services/%s/VerificationCheck", verifyServiceSid);
+            String to = toE164(phone);
+            log.info("Calling Twilio Verify check URL: {} for phone {}", url, to);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.setBasicAuth(accountSid, authToken);
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("To", phone);
+            body.add("To", to);
             body.add("Code", code);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
@@ -153,5 +156,18 @@ public class TwilioVerifyService {
         } catch (Exception e) {
             return fallback;
         }
+    }
+
+    // Ensure phone in E.164 format for Twilio (e.g., +84xxxxxxxxx)
+    private String toE164(String phone) {
+        if (phone == null) throw new IllegalArgumentException("phone is null");
+        String digits = phone.replaceAll("\\D", "");
+        if (digits.isBlank()) throw new IllegalArgumentException("phone has no digits");
+        // Vietnam numbers: if starts with 0 -> convert to 84 + rest
+        if (digits.startsWith("0")) {
+            digits = "84" + digits.substring(1);
+        }
+        // If already starts with 84, keep; otherwise keep digits as-is
+        return "+" + digits;
     }
 }
