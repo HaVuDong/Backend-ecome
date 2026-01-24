@@ -27,6 +27,11 @@ public class ChatController {
     
     private final ChatService chatService;
     private final SecurityUtil securityUtil;
+    private final havudong.baocao.repository.UserRepository userRepository;
+    private final org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder;
+
+    @org.springframework.beans.factory.annotation.Value("${aibox.service-key:}")
+    private String aiboxServiceKey;
     
     /**
      * Lấy danh sách cuộc hội thoại của user hiện tại
@@ -133,5 +138,44 @@ public class ChatController {
                 "unreadMessages", unreadMessages,
                 "unreadConversations", unreadConversations
         )));
+    }
+
+    /**
+     * Endpoint nội bộ cho AIbox gửi assistant message.
+     * Header required: X-AIBOX-KEY
+     */
+    @PostMapping("/system/messages")
+    public ResponseEntity<ApiResponse<MessageResponse>> sendSystemMessage(
+            @RequestHeader(value = "X-AIBOX-KEY", required = false) String key,
+            @Valid @RequestBody havudong.baocao.dto.SystemMessageRequest request
+    ) {
+        // verify key
+        if (aiboxServiceKey == null || aiboxServiceKey.isBlank() || !aiboxServiceKey.equals(key)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Invalid service key"));
+        }
+
+        // Ensure AI user exists (create on demand)
+        String aiEmail = "ai@ecome.local";
+        User aiUser = userRepository.findByEmail(aiEmail).orElseGet(() -> {
+            User u = new User();
+            u.setEmail(aiEmail);
+            u.setPasswordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            u.setFullName("AI Assistant");
+            u.setRole(havudong.baocao.entity.enums.UserRole.SELLER);
+            u.setStatus(havudong.baocao.entity.enums.UserStatus.ACTIVE);
+            return userRepository.save(u);
+        });
+
+        // Build MessageRequest and use chatService to save
+        MessageRequest mr = new MessageRequest();
+        mr.setReceiverId(request.getReceiverId());
+        mr.setContent(request.getContent());
+        mr.setMessageType(request.getMessageType());
+        mr.setConversationId(request.getConversationId());
+        mr.setProductId(request.getProductId());
+
+        MessageResponse resp = chatService.sendMessage(aiUser, mr);
+        return ResponseEntity.ok(ApiResponse.success("Assistant message created", resp));
     }
 }
