@@ -21,6 +21,7 @@ public class ProductResponse {
     private BigDecimal originalPrice;
     private Integer stock;
     private String mainImage;
+    private String mainImagePublicId;
     private BigDecimal rating;
     private Integer soldCount;
     private Boolean isActive;

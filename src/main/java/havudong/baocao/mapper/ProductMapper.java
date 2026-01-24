@@ -46,6 +46,7 @@ public class ProductMapper {
                 .originalPrice(product.getOriginalPrice())
                 .stock(product.getStock())
                 .mainImage(product.getMainImage())
+                .mainImagePublicId(product.getMainImagePublicId())
                 .rating(product.getRating())
                 .soldCount(product.getSoldCount())
                 .isActive(product.getIsActive())

@@ -98,7 +98,8 @@ public class VnPayService {
         Map<String, String> copy = java.util.Arrays.stream(rawQuery.split("&"))
                 .map(s -> s.split("=", 2))
                 .filter(kv -> kv.length == 2 && kv[0] != null && !"vnp_SecureHash".equals(kv[0]) && !"vnp_SecureHashType".equals(kv[0]) && kv[1] != null && !kv[1].isBlank())
-                .collect(Collectors.toMap(kv -> kv[0], kv -> java.net.URLDecoder.decode(kv[1], java.nio.charset.StandardCharsets.UTF_8), (a,b)->a, TreeMap::new));
+                // Use the raw (encoded) values when computing HMAC so we match the originally signed raw query
+                .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1], (a,b)->a, TreeMap::new));
         String hashData = copy.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
                 .collect(Collectors.joining("&"));

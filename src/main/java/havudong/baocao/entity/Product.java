@@ -52,6 +52,9 @@ public class Product extends BaseEntity {
     
     @Column(name = "main_image")
     private String mainImage;
+
+    @Column(name = "main_image_public_id")
+    private String mainImagePublicId;    
     
     @Column(precision = 2, scale = 1)
     private BigDecimal rating = BigDecimal.ZERO;

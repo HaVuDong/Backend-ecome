@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ProductRequest {
     
-    @NotNull(message = "Seller ID không được để trống")
+    // Seller ID chỉ dùng cho legacy endpoint; với endpoint hiện tại seller lấy từ JWT
     private Long sellerId;
     
     @NotNull(message = "Category ID không được để trống")

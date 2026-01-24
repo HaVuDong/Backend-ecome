@@ -36,6 +36,7 @@ public class ProductController {
     private final CategoryService categoryService;
     private final ProductMapper productMapper;
     private final SecurityUtil securityUtil;
+    private final havudong.baocao.service.CloudinaryService cloudinaryService;
     
     /**
      * Tạo sản phẩm mới - seller lấy từ JWT token
@@ -57,6 +58,49 @@ public class ProductController {
         
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Tạo sản phẩm thành công", response));
+    }
+
+    /**
+     * Tạo sản phẩm kèm upload ảnh lên Cloudinary
+     * Content-Type: multipart/form-data
+     * Form parts:
+     * - product: JSON string of ProductRequest
+     * - file: (optional) image file
+     */
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<ProductResponse>> createProductMultipart(
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file
+    ) {
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ProductRequest request = mapper.readValue(productJson, ProductRequest.class);
+
+            // If file present, upload to Cloudinary and set mainImage + publicId
+            havudong.baocao.dto.CloudinaryUploadResult uploadResult = null;
+            if (file != null && !file.isEmpty()) {
+                uploadResult = cloudinaryService.upload(file);
+                request.setMainImage(uploadResult.getUrl());
+            }
+
+            // Lấy seller từ JWT token
+            User seller = securityUtil.getCurrentUser();
+
+            Category category = categoryService.getCategoryById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", request.getCategoryId()));
+
+            Product product = productMapper.toEntity(request, seller, category);
+            if (uploadResult != null) {
+                product.setMainImagePublicId(uploadResult.getPublicId());
+            }
+
+            Product created = productService.createProduct(product);
+            ProductResponse response = productMapper.toResponse(created);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Tạo sản phẩm thành công", response));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Dữ liệu product không hợp lệ"));
+        }
     }
     
     @GetMapping("/{id}")
