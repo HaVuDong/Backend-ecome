@@ -52,24 +52,41 @@ public class VnPayService {
         if (ipAddr != null) params.put("vnp_IpAddr", ipAddr);
 
         // Filter out empty/null parameters (VNPay expects only present params)
-        Map<String, String> filtered = params.entrySet().stream()
-                .filter(e -> e.getValue() != null && !e.getValue().isBlank())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a,b)->a, TreeMap::new));
+        // Build parameters and compute hash using the same algorithm/encoding as the sample implementation
+        java.util.List<String> fieldNames = new java.util.ArrayList<>(params.keySet());
+        java.util.Collections.sort(fieldNames);
 
-        String query = filtered.entrySet().stream()
-                .map(e -> urlEncode(e.getKey()) + "=" + urlEncode(e.getValue()))
-                .collect(Collectors.joining("&"));
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
+            String fieldValue = params.get(fieldName);
+            if (fieldValue != null && fieldValue.length() > 0) {
+                // build hashData using URLEncoder (do NOT replace '+' with '%20')
+                hashData.append(fieldName).append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
+                // build query
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString()))
+                        .append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString()));
 
-        String hashData = filtered.entrySet().stream()
-                .map(e -> urlEncode(e.getKey()) + "=" + urlEncode(e.getValue()))
-                .collect(Collectors.joining("&"));
+                if (i < fieldNames.size() - 1) {
+                    query.append('&');
+                    hashData.append('&');
+                }
+            }
+        }
 
-        String secureHash = hmacSHA512(hashSecret, hashData);
-        String finalUrl = paymentUrl + "?" + query + "&vnp_SecureHash=" + secureHash;
+        String queryUrl = query.toString();
+        String secureHash = hmacSHA512(hashSecret, hashData.toString());
+        queryUrl += "&vnp_SecureHash=" + secureHash;
+
+        String finalUrl = paymentUrl + "?" + queryUrl;
 
         // Avoid logging secrets — mask the secure hash when logging
         String maskedUrl = finalUrl.replaceAll("(?i)vnp_SecureHash=[^&]*", "vnp_SecureHash=***");
         log.info("Generated VNPAY URL: {}", maskedUrl);
+        // For debugging you can set a vnpay.debug flag to log hashData/secureHash if needed
         return finalUrl;
     }
 
